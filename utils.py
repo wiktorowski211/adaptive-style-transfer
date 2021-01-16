@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from __future__ import division
+
 import math
 import scipy.misc
 from scipy.ndimage.filters import gaussian_filter

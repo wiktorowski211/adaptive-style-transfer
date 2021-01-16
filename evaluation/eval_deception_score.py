@@ -89,7 +89,7 @@ classification_layer = {
 def run(extractor, classification_layer, images_df, batch_size=64, logger=Logger()):
     images_df = images_df.copy()
     if len(images_df) == 0:
-        print 'No images found!'
+        print('No images found!')
         return -1, 0, 0
     probs = extractor.extract(images_df['image_path'].values, [classification_layer],
                               verbose=1, batch_size=batch_size)
@@ -117,19 +117,19 @@ results_dir = {
 }
 
 
-style_2_image_name = {u'berthe-morisot': u'Morisot-1886-the-lesson-in-the-garden',
-		      u'claude-monet': u'monet-1914-water-lilies-37.jpg!HD',
-		      u'edvard-munch': u'Munch-the-scream-1893',
-		      u'el-greco': u'el-greco-the-resurrection-1595.jpg!HD',
-		      u'ernst-ludwig-kirchner': u'Kirchner-1913-street-berlin.jpg!HD',
-		      u'jackson-pollock': u'Pollock-number-one-moma-November-31-1950-1950',
-		      u'nicholas-roerich': u'nicholas-roerich_mongolia-campaign-of-genghis-khan',
-		      u'pablo-picasso': u'weeping-woman-1937',
-		      u'paul-cezanne': u'still-life-with-apples-1894.jpg!HD',
-		      u'paul-gauguin': u'Gauguin-the-seed-of-the-areoi-1892',
-		      u'samuel-peploe': u'peploe-ile-de-brehat-1911-1',
-		      u'vincent-van-gogh': u'vincent-van-gogh_road-with-cypresses-1890',
-		      u'wassily-kandinsky': u'Kandinsky-improvisation-28-second-version-1912'}
+style_2_image_name = {'berthe-morisot': 'Morisot-1886-the-lesson-in-the-garden',
+		      'claude-monet': 'monet-1914-water-lilies-37.jpg!HD',
+		      'edvard-munch': 'Munch-the-scream-1893',
+		      'el-greco': 'el-greco-the-resurrection-1595.jpg!HD',
+		      'ernst-ludwig-kirchner': 'Kirchner-1913-street-berlin.jpg!HD',
+		      'jackson-pollock': 'Pollock-number-one-moma-November-31-1950-1950',
+		      'nicholas-roerich': 'nicholas-roerich_mongolia-campaign-of-genghis-khan',
+		      'pablo-picasso': 'weeping-woman-1937',
+		      'paul-cezanne': 'still-life-with-apples-1894.jpg!HD',
+		      'paul-gauguin': 'Gauguin-the-seed-of-the-areoi-1892',
+		      'samuel-peploe': 'peploe-ile-de-brehat-1911-1',
+		      'vincent-van-gogh': 'vincent-van-gogh_road-with-cypresses-1890',
+		      'wassily-kandinsky': 'Kandinsky-improvisation-28-second-version-1912'}
 
 
 artist_2_label_wikiart = get_artist_labels_wikiart()
@@ -175,14 +175,14 @@ if __name__ == '__main__':
     if not os.path.exists(os.path.dirname(args['log_path'])):
         os.makedirs(os.path.dirname(args['log_path']))
     logger = Logger(args['log_path'])
-    print 'Snapshot: {}'.format(args['snapshot_path'])
+    print('Snapshot: {}'.format(args['snapshot_path']))
     extractor = create_slim_extractor(args)
     classification_layer = classification_layer[args['net']]
 
     stats = dict()
     assert artist_2_label_wikiart is not None
-    for artist in artist_2_label_wikiart.keys():
-        print('Method:', args['method'])
+    for artist in list(artist_2_label_wikiart.keys()):
+        print(('Method:', args['method']))
         logger.log('Artist: {}'.format(artist))
         images_df = get_images_df(dataset=args['dataset'], method=args['method'], artist_slug=artist)
         acc, num_is_correct, num_total = run(extractor, classification_layer, images_df,
@@ -190,7 +190,7 @@ if __name__ == '__main__':
         stats[artist] = (acc, num_is_correct, num_total)
 
     logger.log('{}'.format(pformat(args)))
-    print 'Images dir:', results_dir[args['method']]
+    print('Images dir:', results_dir[args['method']])
     logger.log('===\n\n')
     logger.log(args['method'])
     logger.log('{}'.format(sprint_stats(stats)))

@@ -61,7 +61,7 @@ class ImageGetterFromMat:
 
         if resize_shape is not None:
             resized_batch = np.zeros((batch.shape[0],) + resize_shape + (3,), dtype=np.float32)
-            for i in xrange(batch.shape[0]):
+            for i in range(batch.shape[0]):
                 image = np.asarray(
                     Image.fromarray(batch[i, ...]).resize(resize_shape, PIL.Image.ANTIALIAS))
                 resized_batch[i, ...] = image

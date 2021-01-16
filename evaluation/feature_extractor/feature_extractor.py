@@ -113,7 +113,7 @@ class SlimFeatureExtractor(object):
                 self.MaxPool_0a_7x7 = tf.get_default_graph().get_tensor_by_name("InceptionV1/Logits/MaxPool_0a_7x7/AvgPool:0")
             elif net_name in ['vgg_16', 'vgg_16_multihead']:
                 for layer_name in ['fc6', 'fc7'] + \
-                        ['conv{0}/conv{0}_{1}'.format(i, j) for i in xrange(3, 6) for j in xrange(1, 4)]:
+                        ['conv{0}/conv{0}_{1}'.format(i, j) for i in range(3, 6) for j in range(1, 4)]:
                     self.__dict__['vgg_16/{}_prerelu'.format(layer_name)] = \
                         tf.get_default_graph().get_tensor_by_name("vgg_16/{}/BiasAdd:0".format(layer_name))
             config = tf.ConfigProto(gpu_options=
@@ -163,7 +163,7 @@ class SlimFeatureExtractor(object):
                                           should_reshape_vectors=should_reshape_vectors)
 
         # feed to the net_stream augmented images anf pool features after
-        features = np.hstack(feature_dict.values())
+        features = np.hstack(list(feature_dict.values()))
         if spatial_pool is not None and len(features.shape) != 4:
             raise ValueError('Cannot do a spatial pool on features with shape: {}'.format(
                 features.shape))
