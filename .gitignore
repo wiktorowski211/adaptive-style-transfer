@@ -108,3 +108,8 @@ venv.bak/
 models
 logs
 evaluation/evaluation_data
+.idea
+data
+.history
+output
+

@@ -313,60 +313,59 @@ class Artgan(object):
         discr_success = args.discr_success_rate
         alpha = 0.05
 
-        with tf.device('/device:GPU:0'):
-            for step in tqdm(range(self.initial_step, self.options.total_steps+1),
-                             initial=self.initial_step,
-                             total=self.options.total_steps):
-                # Get batch from the queue with batches q, if the last is non-empty.
-                while q_art.empty() or q_content.empty():
-                    pass
-                batch_art = q_art.get()
-                batch_content = q_content.get()
+        for step in tqdm(range(self.initial_step, self.options.total_steps+1),
+                         initial=self.initial_step,
+                         total=self.options.total_steps):
+            # Get batch from the queue with batches q, if the last is non-empty.
+            while q_art.empty() or q_content.empty():
+                pass
+            batch_art = q_art.get()
+            batch_content = q_content.get()
 
-                if discr_success >= win_rate:
-                    # Train generator
-                    _, summary_all, gener_acc_ = self.sess.run(
-                        [self.g_optim_step, self.summary_merged_all, self.gener_acc],
-                        feed_dict={
-                            self.input_painting: normalize_arr_of_imgs(batch_art['image']),
-                            self.input_photo: normalize_arr_of_imgs(batch_content['image']),
-                            self.lr: self.options.lr
-                        })
-                    discr_success = discr_success * (1. - alpha) + alpha * (1. - gener_acc_)
-                else:
-                    # Train discriminator.
-                    _, summary_all, discr_acc_ = self.sess.run(
-                        [self.d_optim_step, self.summary_merged_all, self.discr_acc],
-                        feed_dict={
-                            self.input_painting: normalize_arr_of_imgs(batch_art['image']),
-                            self.input_photo: normalize_arr_of_imgs(batch_content['image']),
-                            self.lr: self.options.lr
-                        })
+            if discr_success >= win_rate:
+                # Train generator
+                _, summary_all, gener_acc_ = self.sess.run(
+                    [self.g_optim_step, self.summary_merged_all, self.gener_acc],
+                    feed_dict={
+                        self.input_painting: normalize_arr_of_imgs(batch_art['image']),
+                        self.input_photo: normalize_arr_of_imgs(batch_content['image']),
+                        self.lr: self.options.lr
+                    })
+                discr_success = discr_success * (1. - alpha) + alpha * (1. - gener_acc_)
+            else:
+                # Train discriminator.
+                _, summary_all, discr_acc_ = self.sess.run(
+                    [self.d_optim_step, self.summary_merged_all, self.discr_acc],
+                    feed_dict={
+                        self.input_painting: normalize_arr_of_imgs(batch_art['image']),
+                        self.input_photo: normalize_arr_of_imgs(batch_content['image']),
+                        self.lr: self.options.lr
+                    })
 
-                    discr_success = discr_success * (1. - alpha) + alpha * discr_acc_
-                self.writer.add_summary(summary_all, step * self.batch_size)
+                discr_success = discr_success * (1. - alpha) + alpha * discr_acc_
+            self.writer.add_summary(summary_all, step * self.batch_size)
 
-                if step % self.options.save_freq == 0 and step > self.initial_step:
-                    self.save(step)
+            if step % self.options.save_freq == 0 and step > self.initial_step:
+                self.save(step)
 
-                # And additionally save all checkpoints each 15000 steps.
-                if step % 15000 == 0 and step > self.initial_step:
-                    self.save(step, is_long=True)
+            # And additionally save all checkpoints each 15000 steps.
+            if step % 15000 == 0 and step > self.initial_step:
+                self.save(step, is_long=True)
 
-                if step % 500 == 0:
-                    output_paintings_, output_photos_= self.sess.run(
-                        [self.input_painting, self.output_photo],
-                        feed_dict={
-                            self.input_painting: normalize_arr_of_imgs(batch_art['image']),
-                            self.input_photo: normalize_arr_of_imgs(batch_content['image']),
-                            self.lr: self.options.lr
-                        })
+            if step % 500 == 0:
+                output_paintings_, output_photos_= self.sess.run(
+                    [self.input_painting, self.output_photo],
+                    feed_dict={
+                        self.input_painting: normalize_arr_of_imgs(batch_art['image']),
+                        self.input_photo: normalize_arr_of_imgs(batch_content['image']),
+                        self.lr: self.options.lr
+                    })
 
-                    save_batch(input_painting_batch=batch_art['image'],
-                               input_photo_batch=batch_content['image'],
-                               output_painting_batch=denormalize_arr_of_imgs(output_paintings_),
-                               output_photo_batch=denormalize_arr_of_imgs(output_photos_),
-                               filepath='%s/step_%d.jpg' % (self.sample_dir, step))
+                save_batch(input_painting_batch=batch_art['image'],
+                           input_photo_batch=batch_content['image'],
+                           output_painting_batch=denormalize_arr_of_imgs(output_paintings_),
+                           output_photo_batch=denormalize_arr_of_imgs(output_photos_),
+                           filepath='%s/step_%d.jpg' % (self.sample_dir, step))
         print("Training is finished. Terminate jobs.")
         for p in jobs:
             p.join()
