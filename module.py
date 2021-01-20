@@ -29,15 +29,15 @@ def encoder(image, options, reuse=True, name="encoder"):
     Returns: Encoded image.
     """
 
-    with tf.variable_scope(name):
+    with tf.compat.v1.variable_scope(name):
         if reuse:
-            tf.get_variable_scope().reuse_variables()
+            tf.compat.v1.get_variable_scope().reuse_variables()
         else:
-            assert tf.get_variable_scope().reuse is False
+            assert tf.compat.v1.get_variable_scope().reuse is False
         image = instance_norm(input=image,
                               is_training=options.is_training,
                               name='g_e0_bn')
-        c0 = tf.pad(image, [[0, 0], [15, 15], [15, 15], [0, 0]], "REFLECT")
+        c0 = tf.pad(tensor=image, paddings=[[0, 0], [15, 15], [15, 15], [0, 0]], mode="REFLECT")
         c1 = tf.nn.relu(instance_norm(input=conv2d(c0, options.gf_dim, 3, 1, padding='VALID', name='g_e1_c'),
                                       is_training=options.is_training,
                                       name='g_e1_bn'))
@@ -67,17 +67,17 @@ def decoder(features, options, reuse=True, name="decoder"):
     Returns: Decoded image.
     """
 
-    with tf.variable_scope(name):
+    with tf.compat.v1.variable_scope(name):
         if reuse:
-            tf.get_variable_scope().reuse_variables()
+            tf.compat.v1.get_variable_scope().reuse_variables()
         else:
-            assert tf.get_variable_scope().reuse is False
+            assert tf.compat.v1.get_variable_scope().reuse is False
 
         def residule_block(x, dim, ks=3, s=1, name='res'):
             p = int((ks - 1) / 2)
-            y = tf.pad(x, [[0, 0], [p, p], [p, p], [0, 0]], "REFLECT")
+            y = tf.pad(tensor=x, paddings=[[0, 0], [p, p], [p, p], [0, 0]], mode="REFLECT")
             y = instance_norm(conv2d(y, dim, ks, s, padding='VALID', name=name+'_c1'), name+'_bn1')
-            y = tf.pad(tf.nn.relu(y), [[0, 0], [p, p], [p, p], [0, 0]], "REFLECT")
+            y = tf.pad(tensor=tf.nn.relu(y), paddings=[[0, 0], [p, p], [p, p], [0, 0]], mode="REFLECT")
             y = instance_norm(conv2d(y, dim, ks, s, padding='VALID', name=name+'_c2'), name+'_bn2')
             return y + x
 
@@ -114,7 +114,7 @@ def decoder(features, options, reuse=True, name="decoder"):
                                       name='g_d4_bn',
                                       is_training=options.is_training))
 
-        d4 = tf.pad(d4, [[0, 0], [3, 3], [3, 3], [0, 0]], "REFLECT")
+        d4 = tf.pad(tensor=d4, paddings=[[0, 0], [3, 3], [3, 3], [0, 0]], mode="REFLECT")
         pred = tf.nn.sigmoid(conv2d(d4, 3, 7, 1, padding='VALID', name='g_pred_c'))*2. - 1.
         return pred
 
@@ -132,11 +132,11 @@ def discriminator(image, options, reuse=True, name="discriminator"):
     Returns:
         Image estimates at different scales.
     """
-    with tf.variable_scope(name):
+    with tf.compat.v1.variable_scope(name):
         if reuse:
-            tf.get_variable_scope().reuse_variables()
+            tf.compat.v1.get_variable_scope().reuse_variables()
         else:
-            assert tf.get_variable_scope().reuse is False
+            assert tf.compat.v1.get_variable_scope().reuse is False
 
         h0 = lrelu(instance_norm(conv2d(image, options.df_dim * 2, ks=5, name='d_h0_conv'),
                    name='d_bn0'))
@@ -174,17 +174,17 @@ def discriminator(image, options, reuse=True, name="discriminator"):
 # ====== Define different types of losses applied to discriminator's output. ====== #
 
 def abs_criterion(in_, target):
-    return tf.reduce_mean(tf.abs(in_ - target))
+    return tf.reduce_mean(input_tensor=tf.abs(in_ - target))
 
 
 def mae_criterion(in_, target):
-    return tf.reduce_mean(tf.abs(in_-target))
+    return tf.reduce_mean(input_tensor=tf.abs(in_-target))
 
 def mse_criterion(in_, target):
-    return tf.reduce_mean((in_-target)**2)
+    return tf.reduce_mean(input_tensor=(in_-target)**2)
 
 def sce_criterion(logits, labels):
-    return tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=labels))
+    return tf.reduce_mean(input_tensor=tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=labels))
 
 
 def reduce_spatial_dim(input_tensor):
@@ -225,9 +225,9 @@ def repeat_scalar(input_tensor, shape):
     :param shape: new_shape of the element of the tensor
     :return: tensor of the shape [batch_size, *shape] with elements repeated.
     """
-    with tf.control_dependencies([tf.assert_equal(tf.shape(input_tensor)[1], 1)]):
-        batch_size = tf.shape(input_tensor)[0]
-    input_tensor = tf.tile(input_tensor, tf.stack(values=[1, tf.reduce_prod(shape)], axis=0))
+    with tf.control_dependencies([tf.compat.v1.assert_equal(tf.shape(input=input_tensor)[1], 1)]):
+        batch_size = tf.shape(input=input_tensor)[0]
+    input_tensor = tf.tile(input_tensor, tf.stack(values=[1, tf.reduce_prod(input_tensor=shape)], axis=0))
     input_tensor = tf.reshape(input_tensor, tf.concat(values=[[batch_size], shape, [1]], axis=0))
     return input_tensor
 
