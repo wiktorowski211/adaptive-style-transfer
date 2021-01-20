@@ -18,17 +18,15 @@
 import math
 import numpy as np
 import tensorflow as tf
-import tensorflow.contrib.slim as slim
+import tf_slim as slim
 from tensorflow.python.framework import ops
 import cv2
-
-import tensorflow.contrib.layers as tflayers
 
 from utils import *
 
 
 def batch_norm(input, is_training=True, name="batch_norm"):
-    x = tflayers.batch_norm(inputs=input,
+    x = tf.keras.layers.BatchNormalization(inputs=input,
                             scale=True,
                             is_training=is_training,
                             trainable=True,
