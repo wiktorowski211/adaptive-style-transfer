@@ -46,7 +46,7 @@ def load_net_with_graph(snapshot_path, gpu_memory_fraction=None,
     if not os.path.exists(snapshot_path):
         raise IOError('Snapshot file not found: {}'.format(snapshot_path))
 
-    config = tf.ConfigProto(log_device_placement=False,
+    config = tf.compat.v1.ConfigProto(log_device_placement=False,
                             allow_soft_placement=True)
     if gpu_memory_fraction is None:
         config.gpu_options.allow_growth = True
@@ -54,13 +54,13 @@ def load_net_with_graph(snapshot_path, gpu_memory_fraction=None,
         config.gpu_options.per_process_gpu_memory_fraction = gpu_memory_fraction
     graph = tf.Graph()
     with graph.as_default():
-        sess = tf.Session(config=config)
-        new_saver = tf.train.import_meta_graph(graph_path)
+        sess = tf.compat.v1.Session(config=config)
+        new_saver = tf.compat.v1.train.import_meta_graph(graph_path)
         new_saver.restore(sess, snapshot_path)
 
         net = MockNet(sess=sess, graph=graph)
         for layer_name, tensor_name in kwargs.items():
-            net.__dict__[layer_name] = tf.get_default_graph().get_tensor_by_name(tensor_name)
+            net.__dict__[layer_name] = tf.compat.v1.get_default_graph().get_tensor_by_name(tensor_name)
         return net
 
 

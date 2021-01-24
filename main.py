@@ -17,7 +17,7 @@
 
 import argparse
 import tensorflow as tf
-tf.set_random_seed(228)
+tf.compat.v1.set_random_seed(228)
 from model import Artgan
 
 def parse_list(str_value):
@@ -140,9 +140,9 @@ args = parser.parse_args()
 
 def main(_):
 
-    tfconfig = tf.ConfigProto(allow_soft_placement=False)
+    tfconfig = tf.compat.v1.ConfigProto(allow_soft_placement=False)
     tfconfig.gpu_options.allow_growth = True
-    with tf.Session(config=tfconfig) as sess:
+    with tf.compat.v1.Session(config=tfconfig) as sess:
         model = Artgan(sess, args)
 
         if args.phase == 'train':
@@ -163,4 +163,4 @@ def main(_):
         sess.close()
 
 if __name__ == '__main__':
-    tf.app.run()
+    tf.compat.v1.app.run()

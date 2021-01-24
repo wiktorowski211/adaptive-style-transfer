@@ -18,7 +18,7 @@
 import numpy as np
 import sklearn.preprocessing
 import tensorflow as tf
-import tensorflow.contrib.slim as slim
+import tf_slim as slim
 from tensorflow.python import pywrap_tensorflow
 
 from features import extract_features
@@ -52,7 +52,7 @@ class SlimFeatureExtractor(object):
         if net_name == 'vgg_16_multihead' and vgg_16_heads is None:
             raise ValueError('vgg_16_heads must be not None for vgg_16_multihead')
 
-        if tf.gfile.IsDirectory(snapshot_path):
+        if tf.io.gfile.isdir(snapshot_path):
             snapshot_path = tf.train.latest_checkpoint(snapshot_path)
 
         if not isinstance(feature_norm_method, list):
@@ -86,12 +86,12 @@ class SlimFeatureExtractor(object):
 
         with tf.Graph().as_default() as graph:
             self.graph = graph
-            with tf.variable_scope('input'):
-                input_pl = tf.placeholder(tf.float32, shape=[None,
+            with tf.compat.v1.variable_scope('input'):
+                input_pl = tf.compat.v1.placeholder(tf.float32, shape=[None,
                                                              eval_image_size,
                                                              eval_image_size, 3], name='x')
                 # not used
-                is_phase_train_pl = tf.placeholder(tf.bool, shape=tuple(), name='is_phase_train')
+                is_phase_train_pl = tf.compat.v1.placeholder(tf.bool, shape=tuple(), name='is_phase_train')
 
             function_to_map = lambda x: image_preprocessing_fn(x, eval_image_size, eval_image_size)
             images = tf.map_fn(function_to_map, input_pl)
@@ -109,16 +109,16 @@ class SlimFeatureExtractor(object):
                     else:
                         full_tensor_name += '/Relu:0'
                     short_name = 'Mixed_4d/' + tensor_name
-                    self.__dict__[short_name] = tf.get_default_graph().get_tensor_by_name(full_tensor_name)
-                self.MaxPool_0a_7x7 = tf.get_default_graph().get_tensor_by_name("InceptionV1/Logits/MaxPool_0a_7x7/AvgPool:0")
+                    self.__dict__[short_name] = tf.compat.v1.get_default_graph().get_tensor_by_name(full_tensor_name)
+                self.MaxPool_0a_7x7 = tf.compat.v1.get_default_graph().get_tensor_by_name("InceptionV1/Logits/MaxPool_0a_7x7/AvgPool:0")
             elif net_name in ['vgg_16', 'vgg_16_multihead']:
                 for layer_name in ['fc6', 'fc7'] + \
                         ['conv{0}/conv{0}_{1}'.format(i, j) for i in range(3, 6) for j in range(1, 4)]:
                     self.__dict__['vgg_16/{}_prerelu'.format(layer_name)] = \
-                        tf.get_default_graph().get_tensor_by_name("vgg_16/{}/BiasAdd:0".format(layer_name))
-            config = tf.ConfigProto(gpu_options=
-                                    tf.GPUOptions(per_process_gpu_memory_fraction=gpu_memory_fraction))
-            self.sess = tf.Session(config=config)
+                        tf.compat.v1.get_default_graph().get_tensor_by_name("vgg_16/{}/BiasAdd:0".format(layer_name))
+            config = tf.compat.v1.ConfigProto(gpu_options=
+                                    tf.compat.v1.GPUOptions(per_process_gpu_memory_fraction=gpu_memory_fraction))
+            self.sess = tf.compat.v1.Session(config=config)
 
             if should_restore_classifier:
                 variables_to_restore = slim.get_model_variables()
